@@ -6,6 +6,7 @@
  */
 import * as draw from './draw.js'
 import * as hstry from './history.js'
+import { BBOX_AFFECTING_ATTRS } from './history.js'
 import {
   getRotationAngle, getBBox as utilsGetBBox, setHref, getStrokedBBoxDefaultVisible
 } from './utilities.js'
@@ -242,11 +243,7 @@ export const changeSelectedAttributeNoUndoMethod = (attr, newValue, elems) => {
       // Only recalculate rotation center for attributes that change element geometry.
       // Non-geometric attributes (stroke-width, fill, opacity, etc.) don't affect
       // the bbox center, so the rotation is already correct and must not be touched.
-      const BBOX_AFFECTING_ATTRS = new Set([
-        'x', 'y', 'x1', 'y1', 'x2', 'y2',
-        'cx', 'cy', 'r', 'rx', 'ry',
-        'width', 'height', 'd', 'points'
-      ])
+      // BBOX_AFFECTING_ATTRS is imported from history.js to keep the list in one place.
       const angle = getRotationAngle(elem)
       if (angle !== 0 && attr !== 'transform' && BBOX_AFFECTING_ATTRS.has(attr)) {
         const tlist = getTransformList(elem)
@@ -254,11 +251,12 @@ export const changeSelectedAttributeNoUndoMethod = (attr, newValue, elems) => {
         while (n--) {
           const xform = tlist.getItem(n)
           if (xform.type === 4) {
-            // Remove old rotation
-            tlist.removeItem(n)
-
-            // Compute new bbox center after attribute change
+            // Compute bbox BEFORE removing the rotation so we can bail out
+            // safely if getBBox returns nothing (avoids losing the rotation).
             const box = utilsGetBBox(elem)
+            if (!box) break
+
+            tlist.removeItem(n)
 
             // Transform bbox center through only the transforms that come
             // AFTER the rotation in the list (not the pre-rotation transforms).

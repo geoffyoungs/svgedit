@@ -12,7 +12,7 @@ import { getTransformList, transformListToTransform, transformPoint } from './ma
 
 // Attributes that affect an element's bounding box. Only these require
 // recalculating the rotation center when changed.
-const BBOX_AFFECTING_ATTRS = new Set([
+export const BBOX_AFFECTING_ATTRS = new Set([
   'x', 'y', 'x1', 'y1', 'x2', 'y2',
   'cx', 'cy', 'r', 'rx', 'ry',
   'width', 'height', 'd', 'points'
@@ -37,10 +37,12 @@ function relocateRotationCenter (elem, changedAttrs) {
   while (n--) {
     const xform = tlist.getItem(n)
     if (xform.type === 4) { // SVG_TRANSFORM_ROTATE
-      tlist.removeItem(n)
-
+      // Compute bbox BEFORE removing the rotation so we can bail out
+      // safely if getBBox returns nothing (avoids losing the rotation).
       const box = getBBox(elem)
       if (!box) return
+
+      tlist.removeItem(n)
 
       // Transform bbox center through only post-rotation transforms.
       // After removeItem(n), what was at n+1 is now at n.
