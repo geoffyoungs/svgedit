@@ -61,7 +61,10 @@ describe('Rotation recalculation on attribute change', function () {
   describe('ChangeElementCommand with rotated elements', function () {
     it('non-geometric attribute change preserves simple rotation', function () {
       const rect = createSvgRect({
-        x: '0', y: '0', width: '100', height: '100',
+        x: '0',
+        y: '0',
+        width: '100',
+        height: '100',
         transform: 'rotate(30, 50, 50)',
         'stroke-width': '1'
       })
@@ -98,7 +101,10 @@ describe('Rotation recalculation on attribute change', function () {
 
     it('non-geometric attribute change preserves compound transforms', function () {
       const rect = createSvgRect({
-        x: '0', y: '0', width: '100', height: '100',
+        x: '0',
+        y: '0',
+        width: '100',
+        height: '100',
         transform: 'translate(100, 50) rotate(30)',
         'stroke-width': '2'
       })
@@ -151,7 +157,10 @@ describe('Rotation recalculation on attribute change', function () {
     it('geometric attribute change updates rotation center correctly', function () {
       // Element with simple rotation — changing x should update the rotation center
       const rect = createSvgRect({
-        x: '0', y: '0', width: '100', height: '100',
+        x: '0',
+        y: '0',
+        width: '100',
+        height: '100',
         transform: 'rotate(45, 50, 50)'
       })
 
@@ -182,7 +191,10 @@ describe('Rotation recalculation on attribute change', function () {
       // When x changes, the rotation center should be computed from the
       // bbox center WITHOUT the pre-rotation translate leaking in.
       const rect = createSvgRect({
-        x: '0', y: '0', width: '100', height: '100',
+        x: '0',
+        y: '0',
+        width: '100',
+        height: '100',
         transform: 'translate(100, 50) rotate(30)'
       })
 
@@ -226,7 +238,10 @@ describe('Rotation recalculation on attribute change', function () {
 
     it('fill change does not trigger rotation recalculation', function () {
       const rect = createSvgRect({
-        x: '0', y: '0', width: '100', height: '100',
+        x: '0',
+        y: '0',
+        width: '100',
+        height: '100',
         transform: 'rotate(45, 50, 50)',
         fill: 'red'
       })
@@ -254,7 +269,10 @@ describe('Rotation recalculation on attribute change', function () {
 
     it('opacity change does not trigger rotation recalculation', function () {
       const rect = createSvgRect({
-        x: '0', y: '0', width: '100', height: '100',
+        x: '0',
+        y: '0',
+        width: '100',
+        height: '100',
         transform: 'translate(50, 25) rotate(60)',
         opacity: '1'
       })
