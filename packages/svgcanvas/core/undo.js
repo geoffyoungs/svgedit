@@ -239,26 +239,42 @@ export const changeSelectedAttributeNoUndoMethod = (attr, newValue, elems) => {
           svgCanvas.selectorManager.requestSelector(elem).resize()
         }, 0)
       }
-      // if this element was rotated, and we changed the position of this element
-      // we need to update the rotational transform attribute
+      // Only recalculate rotation center for attributes that change element geometry.
+      // Non-geometric attributes (stroke-width, fill, opacity, etc.) don't affect
+      // the bbox center, so the rotation is already correct and must not be touched.
+      const BBOX_AFFECTING_ATTRS = new Set([
+        'x', 'y', 'x1', 'y1', 'x2', 'y2',
+        'cx', 'cy', 'r', 'rx', 'ry',
+        'width', 'height', 'd', 'points'
+      ])
       const angle = getRotationAngle(elem)
-      if (angle !== 0 && attr !== 'transform') {
+      if (angle !== 0 && attr !== 'transform' && BBOX_AFFECTING_ATTRS.has(attr)) {
         const tlist = getTransformList(elem)
         let n = tlist.numberOfItems
         while (n--) {
           const xform = tlist.getItem(n)
           if (xform.type === 4) {
-            // remove old rotate
+            // Remove old rotation
             tlist.removeItem(n)
 
+            // Compute new bbox center after attribute change
             const box = utilsGetBBox(elem)
+
+            // Transform bbox center through only the transforms that come
+            // AFTER the rotation in the list (not the pre-rotation transforms).
+            // After removeItem(n), what was at n+1 is now at n.
+            let centerMatrix
+            if (n < tlist.numberOfItems) {
+              centerMatrix = transformListToTransform(tlist, n, tlist.numberOfItems - 1).matrix
+            } else {
+              centerMatrix = svgCanvas.getSvgRoot().createSVGMatrix() // identity
+            }
             const center = transformPoint(
-              box.x + box.width / 2, box.y + box.height / 2, transformListToTransform(tlist).matrix
+              box.x + box.width / 2, box.y + box.height / 2, centerMatrix
             )
-            const cx = center.x
-            const cy = center.y
+
             const newrot = svgCanvas.getSvgRoot().createSVGTransform()
-            newrot.setRotate(angle, cx, cy)
+            newrot.setRotate(angle, center.x, center.y)
             tlist.insertItemBefore(newrot, n)
             break
           }
